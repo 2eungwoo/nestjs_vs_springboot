@@ -13,14 +13,7 @@ export class OrderService {
   ) {}
 
   async createOrders(payloads: CreateOrderDto[]): Promise<OrderResponseDto[]> {
-    const entities = payloads.map(
-      (payload) =>
-        new OrderEntity({
-          productName: payload.productName,
-          quantity: payload.quantity,
-          price: payload.price,
-        }),
-    );
+    const entities = this.orderRepository.create(payloads);
     const saved = await this.orderRepository.save(entities);
     return saved.map((entity) => new OrderResponseDto(entity));
   }
