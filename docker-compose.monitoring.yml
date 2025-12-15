@@ -32,5 +32,16 @@ services:
     ports:
       - "9187:9187"
 
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    container_name: node-exporter
+    restart: unless-stopped
+    pid: host
+    network_mode: host
+    command:
+      - '--path.rootfs=/host'
+    volumes:
+      - /:/host:ro # host: read-only
+
 volumes:
   grafana-data:
