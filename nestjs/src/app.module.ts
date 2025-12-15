@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { MetricsModule } from './metrics/metrics.module';
 import { OrderModule } from './orders/order.module';
 
 @Module({
@@ -18,6 +19,7 @@ import { OrderModule } from './orders/order.module';
       autoLoadEntities: true,
     }),
     OrderModule,
+    MetricsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
