@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { BaseTimeEntity } from '../common/base-time.entity';
 
-@Entity({ name: 'orders' })
+@Entity({ name: 'orders_nest' })
 export class OrderEntity extends BaseTimeEntity {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id!: number;
