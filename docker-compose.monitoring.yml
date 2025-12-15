@@ -23,5 +23,14 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
 
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: postgres-exporter
+    restart: unless-stopped
+    environment:
+      - DATA_SOURCE_NAME=postgresql://seungwoo@host.docker.internal:5432/study?sslmode=disable
+    ports:
+      - "9187:9187"
+
 volumes:
   grafana-data:
