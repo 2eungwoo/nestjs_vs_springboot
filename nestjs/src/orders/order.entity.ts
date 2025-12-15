@@ -6,7 +6,7 @@ export class OrderEntity extends BaseTimeEntity {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id!: number;
 
-  @Column({ name: 'product_name', nullable: false })
+  @Column({ type: 'varchar', name: 'product_name', nullable: false })
   productName!: string;
 
   @Column({ type: 'integer', nullable: false })
