@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { createHash } from 'crypto';
 import { FindManyOptions, Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderResponseDto } from './dto/order-response.dto';
@@ -12,9 +13,15 @@ export class OrderService {
     private readonly orderRepository: Repository<OrderEntity>,
   ) {}
 
-  async createOrders(payloads: CreateOrderDto[]): Promise<OrderResponseDto[]> {
-    const entities = this.orderRepository.create(payloads);
+  async createOrders(requestDto: CreateOrderDto[]): Promise<OrderResponseDto[]> {
+    const dataWithHash = requestDto.map((dto) => ({
+      ...dto,
+      hashId: this.generateHash(dto),
+    }));
+
+    const entities = this.orderRepository.create(dataWithHash);
     const saved = await this.orderRepository.save(entities);
+
     return saved.map((entity) => new OrderResponseDto(entity));
   }
 
@@ -32,5 +39,10 @@ export class OrderService {
       data: orders.map((entity) => new OrderResponseDto(entity)),
       total,
     };
+  }
+
+  private generateHash(dto: CreateOrderDto): string {
+    const buffer = `${dto.productName}:${dto.quantity}:${dto.price}`;
+    return createHash('sha256').update(buffer).digest('hex');
   }
 }

@@ -15,6 +15,9 @@ export class OrderEntity extends BaseTimeEntity {
   @Column({ type: 'bigint', nullable: false })
   price!: number;
 
+  @Column({ type: 'varchar', name: 'hash_id', length: 128, nullable: false })
+  hashId!: string;
+
   constructor(partial?: Partial<OrderEntity>) {
     super();
     if (partial) {

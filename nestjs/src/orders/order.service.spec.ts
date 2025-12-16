@@ -1,9 +1,10 @@
-import { deepEqual, instance, mock, when, verify } from 'ts-mockito';
+import { createHash } from 'crypto';
+import { deepEqual, instance, mock, when, verify, anything } from 'ts-mockito';
 import { Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderEntity } from './order.entity';
 import { OrderService } from './order.service';
-import {OrderResponseDto} from "./dto/order-response.dto";
+import { OrderResponseDto } from './dto/order-response.dto';
 
 describe('OrderService', () => {
   let mockRepository: Repository<OrderEntity>;
@@ -23,30 +24,33 @@ describe('OrderService', () => {
       { productName: 'A', quantity: 1, price: 1000 },
       { productName: 'B', quantity: 2, price: 2000 },
     ];
-    const created: OrderEntity[] = requestDto.map((dto: CreateOrderDto) => createEntity(dto));
-    const saved: OrderEntity[] = created.map((entity:OrderEntity, idx:number) => {
-      entity.id = idx + 1;
-      return entity;
-    });
+    const entities: OrderEntity[] = requestDto.map((dto, idx) =>
+        Object.assign(new OrderEntity(), {
+          id: idx + 1,
+          ...dto,
+          hashId: 'hash-' + idx,
+        }),
+    );
 
     // when
-    when(mockRepository.create(deepEqual(requestDto))).thenReturn(created);
-    when(mockRepository.save(created)).thenResolve(saved);
+    when(mockRepository.create(anything())).thenReturn(entities);
+    when(mockRepository.save(entities)).thenResolve(entities);
 
     const result:OrderResponseDto[] = await service.createOrders(requestDto);
 
     // then
     expect(result).toHaveLength(2);
     expect(result[0].id).toBe(1);
-    verify(mockRepository.create(deepEqual(requestDto))).once();
-    verify(mockRepository.save(created)).once();
+    expect(result[0].hashId).toBeDefined();
+    verify(mockRepository.create(anything())).once();
+    verify(mockRepository.save(entities)).once();
   });
 
   it('find_all_orders : 페이징 없이 find all 테스트 ', async () => {
     // given
     const entities = [
-      createEntity({ id: 1, productName: 'A', quantity: 1, price: 1000 }),
-      createEntity({ id: 2, productName: 'B', quantity: 2, price: 2000 }),
+      createEntity({ id: 1, productName: 'A', quantity: 1, price: 1000, hashId: 'h1' }),
+      createEntity({ id: 2, productName: 'B', quantity: 2, price: 2000, hashId: 'h2' }),
     ];
 
     // when
@@ -56,13 +60,14 @@ describe('OrderService', () => {
     // then
     expect(result).toHaveLength(2);
     expect(result[0].productName).toBe('A');
+    expect(result[0].hashId).toBe('h1');
     verify(mockRepository.find()).once();
   });
 
   it('find_all_orders : find all 페이징 테스트 ', async () => {
     // given
     const options = { skip: 0, take: 1 };
-    const entities:OrderEntity[] = [createEntity({ id: 1, productName: 'A', quantity: 1, price: 1000 })];
+    const entities:OrderEntity[] = [createEntity({ id: 1, productName: 'A', quantity: 1, price: 1000, hashId: 'h1' })];
 
     // when
     when(mockRepository.findAndCount(deepEqual(options))).thenResolve([entities, 10]);
