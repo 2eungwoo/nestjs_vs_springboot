@@ -38,7 +38,7 @@ class OrderServiceTest {
     }
 
     @Test
-    void create_orders() {
+    void create_orders_batch_insert() {
         // given
         List<CreateOrderRequest> requestDto = List.of(
             new CreateOrderRequest("product-1", 1, 100L),

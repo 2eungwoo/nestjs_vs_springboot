@@ -18,23 +18,26 @@ describe('OrderService', () => {
   const createEntity = (partial: Partial<OrderEntity>) =>
     new OrderEntity(partial);
 
-  it('create_orders : 요청 한방에 여러개 만들고 리턴은 dto로 나오는지 테스트', async () => {
+  it('create_orders : 배치 인서트로 대량 삽입 테스트', async () => {
     // given
     const requestDto: CreateOrderDto[] = [
       { productName: 'A', quantity: 1, price: 1000 },
       { productName: 'B', quantity: 2, price: 2000 },
     ];
-    const entities: OrderEntity[] = requestDto.map((dto, idx) =>
-        Object.assign(new OrderEntity(), {
-          id: idx + 1,
-          ...dto,
-          hashId: 'hash-' + idx,
-        }),
-    );
 
     // when
-    when(mockRepository.create(anything())).thenReturn(entities);
-    when(mockRepository.save(entities)).thenResolve(entities);
+    const queryBuilder: any = {
+      insert: () => queryBuilder,
+      into: () => queryBuilder,
+      values: () => queryBuilder,
+      returning: () => queryBuilder,
+      execute: () =>
+        Promise.resolve({
+          identifiers: [{ id: 1 }, { id: 2 }],
+        }),
+    };
+
+    when(mockRepository.createQueryBuilder()).thenReturn(queryBuilder);
 
     const result:OrderResponseDto[] = await service.createOrders(requestDto);
 
@@ -42,8 +45,7 @@ describe('OrderService', () => {
     expect(result).toHaveLength(2);
     expect(result[0].id).toBe(1);
     expect(result[0].hashId).toBeDefined();
-    verify(mockRepository.create(anything())).once();
-    verify(mockRepository.save(entities)).once();
+    verify(mockRepository.createQueryBuilder()).once();
   });
 
   it('find_all_orders : 페이징 없이 find all 테스트 ', async () => {
