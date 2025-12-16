@@ -14,25 +14,15 @@ export class OrderService {
   ) {}
 
   async createOrders(dto: CreateOrderDto[]): Promise<OrderResponseDto[]> {
-    const dataWithHash = dto.map((dto) => ({
-      ...dto,
-      hashId: this.generateHash(dto),
+    const dataWithHash = dto.map((payload) => ({
+      ...payload,
+      hashId: this.generateHash(payload),
     }));
-    const insertResult = await this.orderRepository
-      .createQueryBuilder()
-      .insert()
-      .into(OrderEntity)
-      .values(dataWithHash)
-      .returning(['id'])
-      .execute();
 
-    return dataWithHash.map((payload, index) => {
-      const entity = new OrderEntity({
-        id: insertResult.identifiers[index]?.id as number | undefined,
-        ...payload,
-      });
-      return new OrderResponseDto(entity);
-    });
+    const entities = this.orderRepository.create(dataWithHash);
+    const saved = await this.orderRepository.save(entities);
+
+    return saved.map((entity) => new OrderResponseDto(entity));
   }
 
   async findAllOrders(): Promise<OrderResponseDto[]> {

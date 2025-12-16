@@ -25,19 +25,17 @@ describe('OrderService', () => {
       { productName: 'B', quantity: 2, price: 2000 },
     ];
 
-    // when
-    const queryBuilder: any = {
-      insert: () => queryBuilder,
-      into: () => queryBuilder,
-      values: () => queryBuilder,
-      returning: () => queryBuilder,
-      execute: () =>
-        Promise.resolve({
-          identifiers: [{ id: 1 }, { id: 2 }],
-        }),
-    };
+    const createdEntities = requestDto.map((dto, idx) =>
+      Object.assign(new OrderEntity(), {
+        id: idx + 1,
+        ...dto,
+        hashId: 'hash-' + idx,
+      }),
+    );
 
-    when(mockRepository.createQueryBuilder()).thenReturn(queryBuilder);
+    // when
+    when(mockRepository.create(anything())).thenReturn(createdEntities);
+    when(mockRepository.save(createdEntities)).thenResolve(createdEntities);
 
     const result:OrderResponseDto[] = await service.createOrders(requestDto);
 
@@ -45,7 +43,8 @@ describe('OrderService', () => {
     expect(result).toHaveLength(2);
     expect(result[0].id).toBe(1);
     expect(result[0].hashId).toBeDefined();
-    verify(mockRepository.createQueryBuilder()).once();
+    verify(mockRepository.create(anything())).once();
+    verify(mockRepository.save(createdEntities)).once();
   });
 
   it('find_all_orders : 페이징 없이 find all 테스트 ', async () => {
