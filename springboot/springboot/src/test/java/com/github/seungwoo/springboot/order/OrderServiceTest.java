@@ -32,8 +32,8 @@ class OrderServiceTest {
     @BeforeEach
     void setUp() {
         storedOrders = List.of(
-            OrderEntity.of("product-1", 1, 100L),
-            OrderEntity.of("product-2", 2, 200L)
+            OrderEntity.of("product-1", 1, 100L, "hash-1"),
+            OrderEntity.of("product-2", 2, 200L, "hash-2")
         );
     }
 
@@ -53,6 +53,7 @@ class OrderServiceTest {
         then(orderRepository).should().saveAll(anyList());
         assertThat(result).hasSize(2);
         assertThat(result.get(0).productName()).isEqualTo("product-1");
+        assertThat(result.get(0).hashId()).isEqualTo("hash-1");
     }
 
     @Test

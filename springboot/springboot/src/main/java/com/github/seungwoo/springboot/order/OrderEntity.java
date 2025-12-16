@@ -31,13 +31,17 @@ public class OrderEntity extends BaseTimeEntity {
     @Column(name = "price", nullable = false)
     private Long price;
 
-    private OrderEntity(String productName, Integer quantity, Long price) {
+    @Column(name = "hash_id", nullable = false, length = 128)
+    private String hashId;
+
+    private OrderEntity(String productName, Integer quantity, Long price, String hashId) {
         this.productName = productName;
         this.quantity = quantity;
         this.price = price;
+        this.hashId = hashId;
     }
 
-    public static OrderEntity of(String productName, Integer quantity, Long price) {
-        return new OrderEntity(productName, quantity, price);
+    public static OrderEntity of(String productName, Integer quantity, Long price, String hashId) {
+        return new OrderEntity(productName, quantity, price, hashId);
     }
 }

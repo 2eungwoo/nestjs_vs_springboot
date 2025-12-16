@@ -3,12 +3,12 @@ package com.github.seungwoo.springboot.order;
 import com.github.seungwoo.springboot.order.dto.CreateOrderRequest;
 import com.github.seungwoo.springboot.order.dto.OrderResponse;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.DigestUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -18,15 +18,16 @@ public class OrderService {
 
     @Transactional
     public List<OrderResponse> createOrders(List<CreateOrderRequest> requests) {
-        List<OrderEntity> entities = requests.stream()
+        List<OrderEntity> saved = orderRepository.saveAll(
+            requests.stream()
                 .map(request -> OrderEntity.of(
                     request.productName(),
                     request.quantity(),
-                    request.price())
-                )
-                .collect(Collectors.toList());
-
-        List<OrderEntity> saved = orderRepository.saveAll(entities);
+                    request.price(),
+                    generateHash(request)
+                ))
+                .toList()
+        );
         return saved.stream().map(OrderResponse::from).toList();
     }
 
@@ -41,5 +42,10 @@ public class OrderService {
     public Page<OrderResponse> findAllPagingOrders(Pageable pageable) {
         return orderRepository.findAll(pageable)
             .map(OrderResponse::from);
+    }
+
+    private String generateHash(CreateOrderRequest dto) {
+        String buffer = dto.productName() + ":" + dto.quantity() + ":" + dto.price();
+        return DigestUtils.md5DigestAsHex(buffer.getBytes());
     }
 }
