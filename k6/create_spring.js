@@ -14,10 +14,11 @@ export const options = {
   scenarios: {
     insert: {
       executor: 'constant-arrival-rate',
-      rate: 2,
+      rate: 5,
       timeUnit: '1s',
       duration: '30s',
       preAllocatedVUs: 5,
+      maxVUs:10,
     },
   },
 };
