@@ -1,11 +1,11 @@
 import {Controller, Get, Header} from '@nestjs/common';
-import {registry} from "./registry";
+import {metricsRegistry} from "./metrics.registry";
 
 @Controller()
 export class MetricsController {
   @Get('metrics')
   @Header('Content-Type', 'text/plain')
   getMetrics(): Promise<string> {
-    return registry.metrics();
+    return metricsRegistry.metrics();
   }
 }

@@ -9,7 +9,7 @@ import { tap } from 'rxjs/operators';
 import {
   httpRequestCounter,
   httpRequestDuration,
-} from './http.metrics';
+} from './metrics.http';
 
 @Injectable()
 export class HttpMetricsInterceptor implements NestInterceptor {
