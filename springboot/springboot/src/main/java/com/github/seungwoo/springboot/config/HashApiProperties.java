@@ -1,4 +1,4 @@
-package com.github.seungwoo.springboot.order;
+package com.github.seungwoo.springboot.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;

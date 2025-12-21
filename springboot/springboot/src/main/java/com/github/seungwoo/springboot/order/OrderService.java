@@ -1,5 +1,6 @@
 package com.github.seungwoo.springboot.order;
 
+import com.github.seungwoo.springboot.config.HashApiProperties;
 import com.github.seungwoo.springboot.order.dto.CreateOrderRequest;
 import com.github.seungwoo.springboot.order.dto.HashRequest;
 import com.github.seungwoo.springboot.order.dto.HashResponse;

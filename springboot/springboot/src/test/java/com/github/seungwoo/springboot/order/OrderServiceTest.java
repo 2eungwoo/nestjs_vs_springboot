@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
+import com.github.seungwoo.springboot.config.HashApiProperties;
 import com.github.seungwoo.springboot.order.dto.CreateOrderRequest;
 import com.github.seungwoo.springboot.order.dto.HashResponse;
 import com.github.seungwoo.springboot.order.dto.OrderResponse;
