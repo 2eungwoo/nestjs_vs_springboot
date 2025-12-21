@@ -1,20 +1,27 @@
 package com.github.seungwoo.springboot.order;
 
 import com.github.seungwoo.springboot.order.dto.CreateOrderRequest;
+import com.github.seungwoo.springboot.order.dto.HashRequest;
+import com.github.seungwoo.springboot.order.dto.HashResponse;
 import com.github.seungwoo.springboot.order.dto.OrderResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.DigestUtils;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 @RequiredArgsConstructor
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final RestTemplate restTemplate;
+    private final HashApiProperties hashApiProperties;
 
     @Transactional
     public List<OrderResponse> createOrders(List<CreateOrderRequest> requests) {
@@ -45,7 +52,18 @@ public class OrderService {
     }
 
     private String generateHash(CreateOrderRequest dto) {
-        String buffer = dto.productName() + ":" + dto.quantity() + ":" + dto.price();
-        return DigestUtils.md5DigestAsHex(buffer.getBytes());
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HashRequest request = new HashRequest(dto.productName(), dto.quantity(), dto.price());
+        HttpEntity<HashRequest> entity = new HttpEntity<>(request, headers);
+        HashResponse response = restTemplate.postForObject(
+            hashApiProperties.getUrl(),
+            entity,
+            HashResponse.class
+        );
+        if (response == null || response.hash() == null) {
+            throw new IllegalStateException("Failed to fetch hash from API");
+        }
+        return response.hash();
     }
 }
