@@ -1,14 +1,11 @@
 package com.github.seungwoo.springboot.order;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 
-import com.github.seungwoo.springboot.config.HashApiProperties;
 import com.github.seungwoo.springboot.order.dto.CreateOrderRequest;
-import com.github.seungwoo.springboot.order.dto.HashResponse;
 import com.github.seungwoo.springboot.order.dto.OrderResponse;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +17,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.web.client.RestTemplate;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
@@ -32,10 +28,7 @@ class OrderServiceTest {
     private OrderRepository orderRepository;
 
     @Mock
-    private RestTemplate restTemplate;
-
-    @Mock
-    private HashApiProperties hashApiProperties;
+    private HashApiClient hashApiClient;
 
     private List<OrderEntity> storedOrders;
 
@@ -54,10 +47,9 @@ class OrderServiceTest {
             new CreateOrderRequest("product-1", 1, 100L),
             new CreateOrderRequest("product-2", 2, 200L)
         );
-        given(hashApiProperties.getUrl()).willReturn("http://localhost:7000/hash");
         given(orderRepository.saveAll(anyList())).willReturn(storedOrders);
-        given(restTemplate.postForObject(any(String.class), any(), any()))
-            .willReturn(new HashResponse("hash-1"));
+        given(hashApiClient.generateHash(org.mockito.ArgumentMatchers.any()))
+            .willReturn("hash-1");
 
         // when
         List<OrderResponse> result = orderService.createOrders(requestDto);
