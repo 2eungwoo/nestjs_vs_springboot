@@ -1,23 +1,26 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { createHash } from 'crypto';
 import { FindManyOptions, Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderResponseDto } from './dto/order-response.dto';
 import { OrderEntity } from './order.entity';
+import { HashService } from './services/hash.service';
 
 @Injectable()
 export class OrderService {
   constructor(
     @InjectRepository(OrderEntity)
     private readonly orderRepository: Repository<OrderEntity>,
+    private readonly hashService: HashService,
   ) {}
 
   async createOrders(dto: CreateOrderDto[]): Promise<OrderResponseDto[]> {
-    const dataWithHash = dto.map((payload) => ({
-      ...payload,
-      hashId: this.generateHash(payload),
-    }));
+    const dataWithHash = await Promise.all(
+      dto.map(async (payload) => ({
+        ...payload,
+        hashId: await this.hashService.generateHash(payload),
+      })),
+    );
 
     const entities = this.orderRepository.create(dataWithHash);
     const saved = await this.orderRepository.save(entities);
@@ -39,10 +42,5 @@ export class OrderService {
       data: orders.map((entity) => new OrderResponseDto(entity)),
       total,
     };
-  }
-
-  private generateHash(dto: CreateOrderDto): string {
-    const buffer = `${dto.productName}:${dto.quantity}:${dto.price}`;
-    return createHash('sha256').update(buffer).digest('hex');
   }
 }

@@ -1,18 +1,20 @@
-import { createHash } from 'crypto';
 import { deepEqual, instance, mock, when, verify, anything } from 'ts-mockito';
 import { Repository } from 'typeorm';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderEntity } from './order.entity';
 import { OrderService } from './order.service';
 import { OrderResponseDto } from './dto/order-response.dto';
+import { HashService } from './services/hash.service';
 
 describe('OrderService', () => {
   let mockRepository: Repository<OrderEntity>;
+  let hashService: HashService;
   let service: OrderService;
 
   beforeEach(() => {
     mockRepository = mock<Repository<OrderEntity>>();
-    service = new OrderService(instance(mockRepository));
+    hashService = mock(HashService);
+    service = new OrderService(instance(mockRepository), instance(hashService));
   });
 
   const createEntity = (partial: Partial<OrderEntity>) =>
@@ -35,6 +37,7 @@ describe('OrderService', () => {
 
     // when
     when(mockRepository.create(anything())).thenReturn(createdEntities);
+    when(hashService.generateHash(anything())).thenResolve('hash-test');
     when(mockRepository.save(createdEntities)).thenResolve(createdEntities);
 
     const result:OrderResponseDto[] = await service.createOrders(requestDto);
